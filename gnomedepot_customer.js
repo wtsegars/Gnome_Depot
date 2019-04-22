@@ -61,7 +61,7 @@ inquirer.prompt([
         if(err) throw err;
         items == res.data;
 
-        if(("SELECT * FROM gnomedepot_products WHERE item_id BETWEEN 0 AND 9999999999").includes(user.itemID)) {
+        if(("SELECT * FROM gnomedepot_products WHERE item_id").includes(user.itemID)) {
             let amountPurchased = parseInt(user.quantity);
 
             if(amountPurchased !== num) {
