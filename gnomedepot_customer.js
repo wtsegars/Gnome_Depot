@@ -20,7 +20,7 @@ const getAll = function() {
     connection.query("SELECT * FROM gnomedepot_products", function(error, result) {
         if(error) throw error;
         console.log(result);
-        connection.end();
+        //connection.end();
     });
 };
 
@@ -45,12 +45,12 @@ const purchaseItem = function() {
 
 inquirer.prompt([
     {
-        type: "input",
+        type: "number",
         name: "itemID",
         message: "What is the id of the item that you would like to purchase?"
     },
     {
-        type: "input",
+        type: "number",
         name: "quantity",
         message: "How many of this product would you like to purchase?"
     }
@@ -61,7 +61,7 @@ inquirer.prompt([
         if(err) throw err;
         items == res.data;
 
-        if(user.itemID === "SELECT * FROM gnomedepot_products WHERE item_id BETWEEN 0 AND 9999999999") {
+        if(("SELECT * FROM gnomedepot_products WHERE item_id BETWEEN 0 AND 9999999999").includes(user.itemID)) {
             let amountPurchased = parseInt(user.quantity);
 
             if(amountPurchased !== num) {
