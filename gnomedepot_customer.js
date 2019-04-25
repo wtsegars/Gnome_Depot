@@ -24,13 +24,13 @@ const getAll = function() {
     });
 };
 
-const purchaseItem = function() {
+const purchaseItem = function(data, user) {
     console.log("Processing Transaction...\n");
     connection.query(
-        "UPDATE gnomedepot_products SET ? WHERE ?", [user.quantity, user.itemID],
+        "UPDATE gnomedepot_products SET ? WHERE ?",
         [
             {
-                stock_quantity: parseInt("SELECT * FROM gnomedepot_products WHERE ? IN stock_quantity", [user.itemID]) -= parseInt(user.quantity)
+                stock_quantity: data[0].stock_quantity -= user.quantity
             },
             {
                 item_id: user.itemID
@@ -39,6 +39,7 @@ const purchaseItem = function() {
         function(err) {
             if(err) throw err;
             console.log("Transaction completed!\n");
+            connection.end();
         }
     )
 };
@@ -55,27 +56,26 @@ inquirer.prompt([
         message: "How many of this product would you like to purchase?"
     }
 ]).then(function(user) {
-    connection.query("SELECT * FROM gnomedepot_products WHERE item_id = ?", [user.itemID], function(err, num) {
+    connection.query("SELECT * FROM gnomedepot_products WHERE item_id = ?", [user.itemID], function(err, data) {
         if(err) throw err;
-        console.log(user.itemID);
-        if(("SELECT * FROM gnomedepot_products WHERE item_id = ?").includes(user.itemID) === true) {
+        if(data[0].item_id) {
             let amountPurchased = parseInt(user.quantity);
 
-            if(amountPurchased !== num) {
+            if(!amountPurchased) {
                 console.log("We were unable to complete your transaction because the amount that you entered to purchase was not a valid number.");
                 connection.end();
             }
 
-            else if(amountPurchased > "SELECT * FROM gnomedepot_products WHERE ? IN stock_quantity", [user.itemID]) {
+            else if(amountPurchased > data[0].stock_quantity) {
                 console.log("The amount of this item that you wish to purchase is greater than what we have available in stock");
                 connection.end();
             }
 
-            else if(amountPurchased <= "SELECT * FROM gnomedepot_products WHERE ? IN stock_quantity", [user.itemID]) {
-                purchaseItem();
+            else if(amountPurchased <= data[0].stock_quantity) {
+                purchaseItem(data, user);
             }
         }
-        else if(("SELECT * FROM gnomedepot_products WHERE item_id = ?").includes(user.itemID) === false) {
+        else  {
             console.log("We are unable to continue this transaction because you have entered an invalid item id.");
             connection.end();
         }
