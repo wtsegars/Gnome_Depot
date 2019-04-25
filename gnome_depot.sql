@@ -14,6 +14,8 @@ CREATE TABLE gnomedepot_products(
 
 USE gnomedepot_db;
 
+SELECT * FROM gnomedepot_products;
+
 INSERT INTO gnomedepot_products (item_id, product_name, department_name, price, stock_quantity)
 VALUES (1009867543, "Gnome 2x4", "Gnome Lumber", 3.50, 450);
 
