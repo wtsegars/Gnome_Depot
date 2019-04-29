@@ -21,10 +21,10 @@ const addInventory = function(response, data) {
         "UPDATE gnomedepot_products SET ? WHERE ?",
         [
             {
-                stock_quantity: data[0].stock_quantity += respoonse.productQuantity
+                stock_quantity: response.productQuantity += data[0].stock_quantity
             },
             {
-                item_id: response.productName
+                product_name: response.productName
             }
         ],
         function(err) {
@@ -33,7 +33,7 @@ const addInventory = function(response, data) {
             connection.end();
         }
     )
-}
+};
 
 const addProduct = function() {
     inquirer.prompt([
@@ -63,6 +63,7 @@ const addProduct = function() {
             message: "What department is this item going into?"
         }
     ]).then(function(response) {
+        console.log("Adding new product to inventory...\n")
         connection.query(
             "INSERT INTO gnomedepot_products SET ?",
             {
@@ -75,9 +76,11 @@ const addProduct = function() {
             function(err) {
                 if(err) throw err;
             }
-            )
+        )
+        console.log("New product addition complete!\n");
+        connection.end();
     })
-}
+};
 
 inquirer.prompt([
     {
@@ -116,10 +119,13 @@ inquirer.prompt([
                 message: "What is the amount that you would like to add?"
             }
         ]).then(function (response) {
-            connection.query("SELECT * FROM gnomedepot_products WHERE product_name = ?", [response.productName], function(data, err) {
+            connection.query("SELECT * FROM gnomedepot_products WHERE product_name = ?", [response.productName], function(err, data) {
+                console.log(JSON.stringify(response, null, 2));
+                console.log(JSON.stringify(data, null, 2));
                 if(err) throw err;
+                let prodQuan = parseInt(response.productQuantity);
                 if(data[0].product_name) {
-                    if(!response.productQuantity) {
+                    if(!prodQuan) {
                         console.log("This action could not be completed because you entered an invalid number.");
                         connection.end();
                     }
@@ -136,6 +142,5 @@ inquirer.prompt([
     }
     else if(user.managerOptions === "Add New Product") {
         addProduct();
-        connection.end();
     }
 });
