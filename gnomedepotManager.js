@@ -15,37 +15,25 @@ connection.connect(function(err) {
     console.log("Connected as ID " + connection.threadId);
 });
 
-const addInventory = function() {
-    inquirer.prompt([
-        {
-            type: "input",
-            name: "productName",
-            message: "Which product would you like to add quantity to?"
-        },
-        {
-            type: "input",
-            name: "productQuantity",
-            message: "What is the amount that you would like to add?"
-        }
-    ]).then(function(response) {
-        if(response.productName === data[0].product_name) {
-            connection.query("UPDATE gnomedepot_products SET ? WHERE ?", [
-                {
-                    stock_quantity: data[0].product_name += response.productName
-                },
-                {
-                    productName: response.productName
-                }
-            ],
-            function(err) {
-                if(err) throw err;
-                console.log("Update complete!");
-                connection.end();
+const addInventory = function(response, data) {
+    console.log("Inventory updating...\n");
+    connection.query(
+        "UPDATE gnomedepot_products SET ? WHERE ?",
+        [
+            {
+                stock_quantity: data[0].stock_quantity += respoonse.productQuantity
+            },
+            {
+                item_id: response.productName
             }
-            )
+        ],
+        function(err) {
+            if(err) throw err;
+            console.log("Update complete!\n");
+            connection.end();
         }
-    })
-};
+    )
+}
 
 const addProduct = function() {
     inquirer.prompt([
@@ -116,8 +104,35 @@ inquirer.prompt([
         })
     }
     else if(user.managerOptions === "Add to Inventory") {
-        addInventory();
-        connection.end();
+        inquirer.prompt([
+            {
+                type: "input",
+                name: "productName",
+                message: "Which product would you like to add quantity to?"
+            },
+            {
+                type: "input",
+                name: "productQuantity",
+                message: "What is the amount that you would like to add?"
+            }
+        ]).then(function (response) {
+            connection.query("SELECT * FROM gnomedepot_products WHERE product_name = ?", [response.productName], function(data, err) {
+                if(err) throw err;
+                if(data[0].product_name) {
+                    if(!response.productQuantity) {
+                        console.log("This action could not be completed because you entered an invalid number.");
+                        connection.end();
+                    }
+                    else {
+                        addInventory(response, data);
+                    }
+                }
+                else {
+                    console.log("This action could not be completed because you entered an invalid item.");
+                    connection.end();
+                }
+            })
+        })
     }
     else if(user.managerOptions === "Add New Product") {
         addProduct();
